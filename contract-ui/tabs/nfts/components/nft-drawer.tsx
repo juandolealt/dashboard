@@ -1,5 +1,6 @@
 import { AirdropTab } from "./airdrop-tab";
 import { BurnTab } from "./burn-tab";
+import { ClaimTab } from "./claim-tab";
 import { MintSupplyTab } from "./mint-supply-tab";
 import { TransferTab } from "./transfer-tab";
 import {
@@ -63,6 +64,10 @@ export const NFTDrawer: React.FC<NFTDrawerProps> = ({
   const isMintable = detectFeatures(contract, ["ERC1155Mintable"]);
 
   const isClaimable = detectFeatures<DropContract>(contract, [
+    "ERC1155Claimable",
+  ]);
+
+  const isClaimableWithConditions = detectFeatures<DropContract>(contract, [
     "ERC1155ClaimableWithConditions",
   ]);
 
@@ -150,7 +155,7 @@ export const NFTDrawer: React.FC<NFTDrawerProps> = ({
         },
       ]);
     }
-    if (isClaimable && isERC1155) {
+    if (isClaimableWithConditions && isERC1155) {
       t = t.concat([
         {
           title: "Claim Conditions",
@@ -158,6 +163,15 @@ export const NFTDrawer: React.FC<NFTDrawerProps> = ({
           children: () => (
             <ClaimConditions contract={contract} tokenId={tokenId} isColumn />
           ),
+        },
+      ]);
+    }
+    if (isClaimable && isERC1155) {
+      t = t.concat([
+        {
+          title: "Claim",
+          isDisabled: false,
+          children: () => <ClaimTab contract={contract} tokenId={tokenId} />,
         },
       ]);
     }
@@ -173,6 +187,7 @@ export const NFTDrawer: React.FC<NFTDrawerProps> = ({
     tokenId,
     erc1155,
     isClaimable,
+    isClaimableWithConditions,
     data,
   ]);
 

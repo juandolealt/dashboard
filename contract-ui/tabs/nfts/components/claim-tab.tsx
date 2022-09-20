@@ -1,5 +1,11 @@
 import { FormControl, Input, Stack } from "@chakra-ui/react";
-import { NFTContract, useTransferNFT } from "@thirdweb-dev/react";
+import {
+  DropContract,
+  NFTContract,
+  useAddress,
+  useClaimNFT,
+  useTransferNFT,
+} from "@thirdweb-dev/react";
 import { TransactionButton } from "components/buttons/TransactionButton";
 import { detectFeatures } from "components/contract-components/utils";
 import { constants } from "ethers";
@@ -8,30 +14,28 @@ import { useTxNotifications } from "hooks/useTxNotifications";
 import { useForm } from "react-hook-form";
 import { FormErrorMessage, FormHelperText, FormLabel } from "tw-components";
 
-interface TransferTabProps {
-  contract: NFTContract;
+interface ClaimTabProps {
+  contract: DropContract;
   tokenId: string;
 }
 
-export const TransferTab: React.FC<TransferTabProps> = ({
-  contract,
-  tokenId,
-}) => {
+export const ClaimTab: React.FC<ClaimTabProps> = ({ contract, tokenId }) => {
   const trackEvent = useTrack();
+  const address = useAddress();
   const {
     register,
     handleSubmit,
     formState: { errors, isDirty },
     reset,
   } = useForm<{ to: string; amount: string }>({
-    defaultValues: { to: "", amount: "1" },
+    defaultValues: { to: address, amount: "1" },
   });
 
-  const transfer = useTransferNFT(contract);
+  const claim = useClaimNFT(contract);
 
   const { onSuccess, onError } = useTxNotifications(
-    "Transfer successful",
-    "Error transferring",
+    "Claim successful",
+    "Error claiming NFT",
   );
 
   const isErc1155 = detectFeatures(contract, ["ERC1155"]);
@@ -42,20 +46,20 @@ export const TransferTab: React.FC<TransferTabProps> = ({
         onSubmit={handleSubmit((data) => {
           trackEvent({
             category: "nft",
-            action: "transfer",
+            action: "claim",
             label: "attempt",
           });
-          transfer.mutate(
+          claim.mutate(
             {
               tokenId,
               to: data.to,
-              amount: data.amount,
+              quantity: data.amount,
             },
             {
               onSuccess: () => {
                 trackEvent({
                   category: "nft",
-                  action: "transfer",
+                  action: "claim",
                   label: "success",
                 });
                 onSuccess();
@@ -64,7 +68,7 @@ export const TransferTab: React.FC<TransferTabProps> = ({
               onError: (error) => {
                 trackEvent({
                   category: "nft",
-                  action: "transfer",
+                  action: "claim",
                   label: "error",
                   error,
                 });
@@ -76,32 +80,21 @@ export const TransferTab: React.FC<TransferTabProps> = ({
       >
         <Stack gap={3}>
           <Stack spacing={6} w="100%" direction={{ base: "column", md: "row" }}>
-            <FormControl isRequired isInvalid={!!errors.to}>
-              <FormLabel>To Address</FormLabel>
-              <Input placeholder={constants.AddressZero} {...register("to")} />
-              <FormHelperText>Enter the address to transfer to.</FormHelperText>
-              <FormErrorMessage>{errors.to?.message}</FormErrorMessage>
+            <FormControl isRequired={isErc1155} isInvalid={!!errors.to}>
+              <FormLabel>Amount</FormLabel>
+              <Input placeholder={"1"} {...register("amount")} />
+              <FormHelperText>How many would you like to claim?</FormHelperText>
+              <FormErrorMessage>{errors.amount?.message}</FormErrorMessage>
             </FormControl>
-            {isErc1155 && (
-              <FormControl isRequired={isErc1155} isInvalid={!!errors.to}>
-                <FormLabel>Amount</FormLabel>
-                <Input placeholder={"1"} {...register("amount")} />
-                <FormHelperText>
-                  How many would you like to transfer?
-                </FormHelperText>
-                <FormErrorMessage>{errors.amount?.message}</FormErrorMessage>
-              </FormControl>
-            )}
           </Stack>
           <TransactionButton
             transactionCount={1}
-            isLoading={transfer.isLoading}
+            isLoading={claim.isLoading}
             type="submit"
             colorScheme="primary"
             alignSelf="flex-end"
-            isDisabled={!isDirty}
           >
-            Transfer
+            Claim
           </TransactionButton>
         </Stack>
       </form>
