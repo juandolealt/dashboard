@@ -1,14 +1,7 @@
 import { FormControl, Input, Stack } from "@chakra-ui/react";
-import {
-  DropContract,
-  NFTContract,
-  useAddress,
-  useClaimNFT,
-  useTransferNFT,
-} from "@thirdweb-dev/react";
+import { DropContract, useAddress, useClaimNFT } from "@thirdweb-dev/react";
 import { TransactionButton } from "components/buttons/TransactionButton";
 import { detectFeatures } from "components/contract-components/utils";
-import { constants } from "ethers";
 import { useTrack } from "hooks/analytics/useTrack";
 import { useTxNotifications } from "hooks/useTxNotifications";
 import { useForm } from "react-hook-form";
@@ -25,7 +18,7 @@ export const ClaimTab: React.FC<ClaimTabProps> = ({ contract, tokenId }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors },
     reset,
   } = useForm<{ to: string; amount: string }>({
     defaultValues: { to: address, amount: "1" },
