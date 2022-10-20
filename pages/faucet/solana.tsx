@@ -30,10 +30,10 @@ const SolanaFaucet: ThirdwebNextPage = () => {
         mx="auto"
         px={{ base: 0, md: 4 }}
       >
-        <Heading>Solana faucet</Heading>
-        <Heading fontSize="20px" my="4">
+        <h1>Solana faucet</h1>
+        <h2 fontSize="20px" my="4">
           Get Solana devnet tokens for free
-        </Heading>
+        </h2>
         {!transactionLink ? (
           <FormComponent
             transactionLink={transactionLink}
